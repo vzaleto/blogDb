@@ -32,7 +32,7 @@ exports.getPosts = async (req, res) => {
     try{
         const posts = await Post.findAll({
 
-            include: [Tag]
+            include: [{model: Tag, as: 'tags'}]
         })
         console.log(posts)
 
