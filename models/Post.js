@@ -1,6 +1,7 @@
 const {DataTypes} = require('sequelize');
 const sequelize = require('../config/database')
 
+
 const Post = sequelize.define('Post', {
     title:{
         type: DataTypes.STRING,
@@ -23,5 +24,6 @@ const Post = sequelize.define('Post', {
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 })
+
 
 module.exports = Post

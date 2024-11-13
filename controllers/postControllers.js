@@ -12,11 +12,18 @@ exports.createPost = async (req, res) => {
                     return tag
                 })
             )
-            await post.addTags(tagIds)
+
+            console.log(tagIds)
+
+
+            //  await post.update({ tags: tagIds });
+            // await post.save();
+
+              await post.addTags(tagIds);
         }
         res.status(201).json(post)
     } catch (err) {
-        console.error(err)
+        console.error("eee",err)
         res.status(500).json({error: 'Failed to create post'})
     }
 }
@@ -24,8 +31,11 @@ exports.createPost = async (req, res) => {
 exports.getPosts = async (req, res) => {
     try{
         const posts = await Post.findAll({
-            include:Tag
+
+            include: [Tag]
         })
+        console.log(posts)
+
         res.status(200).json(posts)
     }catch(err){
         console.error(err)
@@ -37,7 +47,7 @@ exports.getPostById = async (req, res) => {
     const {id} = req.params;
     try{
         const post = await Post.findByPk(id, {
-            include:Tag
+            include:[Tag]
         })
         res.status(200).json(post)
     }catch (err){
