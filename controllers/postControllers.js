@@ -6,15 +6,15 @@ exports.createPost = async (req, res) => {
     console.log(req.body)
     try {
         const post = await Post.create({title, content, image, fullContent});
-        console.log(post)
+
         if (tags && tags.length > 0) {
+
             const tagIds = await Promise.all(
                 tags.map(async (tagName) => {
                     const [tag] = await Tag.findOrCreate({where: {name: tagName.name}})
                     return tag.id
                 })
             )
-            console.log('TagsID' + tagIds)
             //  await post.update({ tags: tagIds });
             // await post.save();
               await post.addTags(tagIds);
@@ -43,15 +43,20 @@ exports.getPosts = async (req, res) => {
 
 exports.getPostByTagName = async (req, res) => {
     const {tagName} = req.params;
+    console.log(tagName)
     try{
         const posts = await Post.findAll({
-            include: [{model: Tag, where: {name: tagName}, attributes: ['name']}]
+            include: [{model: Tag, as: 'tags', where: {name: tagName}, required: true}]
         })
+        if(posts.length === 0) {
+            return res.status(404).json({error: 'Post not found'})
+        }
         res.status(200).json(posts)
     }catch(error){
         res.status(500).json({error: 'Failed to get PostByTagName'})
     }
 }
+
 exports.getTags = async (req, res) => {
     try{
         const tags = await Tag.findAll();
