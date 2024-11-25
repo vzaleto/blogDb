@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const Tag = require('../models/Tag');
+const {Op} = require("sequelize");
 
 exports.createPost = async (req, res) => {
     const {title, content, image, tags, fullContent} = req.body;
@@ -15,19 +16,19 @@ exports.createPost = async (req, res) => {
                     return tag.id
                 })
             )
-            //  await post.update({ tags: tagIds });
-            // await post.save();
-              await post.addTags(tagIds);
+            //  await postCard.update({ tags: tagIds });
+            // await postCard.sav-[[e();
+            await post.addTags(tagIds);
         }
         res.status(201).json(post)
     } catch (err) {
-        console.error("eee",err)
-        res.status(500).json({error: 'Failed to create post'})
+        console.error("eee", err)
+        res.status(500).json({error: 'Failed to create postCard'})
     }
 }
 
 exports.getPosts = async (req, res) => {
-    try{
+    try {
         const posts = await Post.findAll({
 
             include: [{model: Tag, as: 'tags'}]
@@ -35,7 +36,7 @@ exports.getPosts = async (req, res) => {
 
 
         res.status(200).json(posts)
-    }catch(err){
+    } catch (err) {
         console.error(err)
         res.status(500).json({error: 'Failed to get posts'})
     }
@@ -44,39 +45,83 @@ exports.getPosts = async (req, res) => {
 exports.getPostByTagName = async (req, res) => {
     const {tagName} = req.params;
     console.log(tagName)
-    try{
+    try {
         const posts = await Post.findAll({
             include: [{model: Tag, as: 'tags', where: {name: tagName}, required: true}]
         })
-        if(posts.length === 0) {
+        if (posts.length === 0) {
             return res.status(404).json({error: 'Post not found'})
         }
         res.status(200).json(posts)
-    }catch(error){
+    } catch (error) {
         res.status(500).json({error: 'Failed to get PostByTagName'})
     }
 }
 
 exports.getTags = async (req, res) => {
-    try{
+    try {
         const tags = await Tag.findAll();
         res.status(200).json(tags)
-    }catch(error){
+    } catch (error) {
         res.status(500).json({error: 'Failed to get tags'})
     }
 
 }
 
 exports.getPostById = async (req, res) => {
-    const {id} = req.params;
-    try{
-        const post = await Post.findByPk(id, {
-            include:[Tag]
+    try {
+        const post = await Post.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Tag,
+                    as: 'tags'
+                }
+            ]
         })
         res.status(200).json(post)
-    }catch (err){
+    } catch (err) {
         console.error(err)
-        res.status(500).json({error: 'Failed to get post'})
+        res.status(500).json({error: 'Failed to get postCard'})
     }
 
+}
+
+exports.searchPosts = async (req, res) => {
+
+    console.log(1)
+    console.log('req-query', req.query)
+    const {query} = req.query
+    console.log('Searcj' + query)
+
+    if(!query) {
+        return res.status(400).json({error: 'Query is empty'})
+    }
+
+    try {
+        const posts = await Post.findAll({
+            where: {
+                [Op.or]: [
+                    {
+                        title: {
+                            [Op.like]: `%${query}%`
+                        }
+                    },
+                    {
+                        content: {
+                            [Op.like]: `%${query}%`
+                        }
+                    }
+                ]
+            },
+            include: [{model: Tag, as: 'tags'}]
+        })
+        if (posts.length === 0) {
+            return res.status(404).json({error: 'Post not found'})
+        }
+        console.log("posts",posts)
+        res.status(200).json(posts)
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({error: 'Failed to search post'})
+    }
 }

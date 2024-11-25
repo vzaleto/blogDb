@@ -16,7 +16,7 @@ const Post = sequelize.define('Post', {
         allowNull: true
     },
     fullContent:{
-        type: DataTypes.TEXT,
+        type: DataTypes.JSON,
         allowNull: true
     }
 }, {
