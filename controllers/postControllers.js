@@ -86,15 +86,14 @@ exports.getPostById = async (req, res) => {
 
 }
 
+
+
 exports.searchPosts = async (req, res) => {
+    const { query } = req.query;
+    console.log('Received query:', query);
 
-    console.log(1)
-    console.log('req-query', req.query)
-    const {query} = req.query
-    console.log('Searcj' + query)
-
-    if(!query) {
-        return res.status(400).json({error: 'Query is empty'})
+    if (!query) {
+        return res.status(400).json({ error: 'Query is empty' });
     }
 
     try {
@@ -103,25 +102,27 @@ exports.searchPosts = async (req, res) => {
                 [Op.or]: [
                     {
                         title: {
-                            [Op.like]: `%${query}%`
-                        }
+                            [Op.like]: `%${query}%`,
+                        },
                     },
                     {
                         content: {
-                            [Op.like]: `%${query}%`
-                        }
-                    }
-                ]
+                            [Op.like]: `%${query}%`,
+                        },
+                    },
+                ],
             },
-            include: [{model: Tag, as: 'tags'}]
-        })
+            include: [{ model: Tag, as: 'tags' }],
+        });
+
+        console.log('Filtered posts:', posts);
+
         if (posts.length === 0) {
-            return res.status(404).json({error: 'Post not found'})
+            // return res.status(404).json({ error: 'Post not found' });
         }
-        console.log("posts",posts)
-        res.status(200).json(posts)
+        res.status(200).json(posts);
     } catch (err) {
-        console.error(err)
-        res.status(500).json({error: 'Failed to search post'})
+        console.error('Error in searchPosts:', err);
+        res.status(500).json({ error: 'Failed to search posts' });
     }
-}
+};

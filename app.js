@@ -14,7 +14,6 @@ app.use(express.json());
 
 app.use("/api", postRoutes) // +
 
-
 sequelize.sync({alter: true})
     .then(() => console.log('Database connected'))
     .catch(error => console.log(error))
