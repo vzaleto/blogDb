@@ -1,23 +1,35 @@
 const Post = require('../models/Post');
 const Tag = require('../models/Tag');
 const {Op} = require("sequelize");
+const multer = require("multer");
+
 
 exports.createPost = async (req, res) => {
-    const {title, content, image, tags, fullContent} = req.body;
     console.log(req.body)
-    try {
-        const post = await Post.create({title, content, image, fullContent});
+    const {title, content, tags, fullContent} = req.body;
 
-        if (tags && tags.length > 0) {
+    const image = req.files?.image?.[0]?.filename || null;
+    const cardImages = req.files?.cardImage || [];
+
+    const tagsParsed = tags ? JSON.parse(tags) : [];
+    const uniqTags = [...new Map(tagsParsed.map(tag => [tag.name, tag])).values()]
+    const fullContentParsed = fullContent ? JSON.parse(fullContent) : [];
+    const fullContentWithImage = fullContentParsed.map((item, index) => ({
+        ...item,
+        image: cardImages[index]?.filename || null
+    }))
+
+    try {
+        const post = await Post.create({title, content, image, fullContent: fullContentWithImage});
+
+        if (tagsParsed && tagsParsed.length > 0) {
 
             const tagIds = await Promise.all(
-                tags.map(async (tagName) => {
+                uniqTags.map(async (tagName) => {
                     const [tag] = await Tag.findOrCreate({where: {name: tagName.name}})
                     return tag.id
                 })
             )
-            //  await postCard.update({ tags: tagIds });
-            // await postCard.sav-[[e();
             await post.addTags(tagIds);
         }
         res.status(201).json(post)
@@ -87,13 +99,12 @@ exports.getPostById = async (req, res) => {
 }
 
 
-
 exports.searchPosts = async (req, res) => {
-    const { query } = req.query;
+    const {query} = req.query;
     console.log('Received query:', query);
 
     if (!query) {
-        return res.status(400).json({ error: 'Query is empty' });
+        return res.status(400).json({error: 'Query is empty'});
     }
 
     try {
@@ -112,7 +123,7 @@ exports.searchPosts = async (req, res) => {
                     },
                 ],
             },
-            include: [{ model: Tag, as: 'tags' }],
+            include: [{model: Tag, as: 'tags'}],
         });
 
         console.log('Filtered posts:', posts);
@@ -123,6 +134,6 @@ exports.searchPosts = async (req, res) => {
         res.status(200).json(posts);
     } catch (err) {
         console.error('Error in searchPosts:', err);
-        res.status(500).json({ error: 'Failed to search posts' });
+        res.status(500).json({error: 'Failed to search posts'});
     }
 };

@@ -5,14 +5,17 @@ const postRoutes = require('./routes/postRoutes');
 const {sequelize} = require('./models');
 
 
+
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
+app.use("/api", postRoutes);
 
-app.use("/api", postRoutes) // +
 
 sequelize.sync({alter: true})
     .then(() => console.log('Database connected'))
