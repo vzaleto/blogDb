@@ -1,5 +1,12 @@
 const {Sequelize} = require('sequelize')
-require('dotenv').config()
+// require('dotenv').config()
+
+console.log("DB CONFIG:", {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    db: process.env.DB_NAME
+});
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -8,7 +15,8 @@ const sequelize = new Sequelize(
     {
         host: process.env.DB_HOST,
         dialect: 'mysql',
-        port: process.env.DB_PORT,
+        port: Number(process.env.DB_PORT),
+        logging: false
     }
 )
 
