@@ -20,11 +20,11 @@ const router = express.Router();
 router.post('/admin/login', adminLogin);
 router.post('/postCreate', upload.fields([{name:'image', maxCount: 1},{name:'cardImage', maxCount: 20}]), authAdmin,  createPost);
 router.get('/posts', getPosts);
+router.get('/search', searchPosts);
 router.get('/post/:id', getPostById);
 router.get('/post/tag/:tagName', getPostByTagName);
 router.get('/tags', getTags);
 
-router.get('/post/search', searchPosts);
 
 
 module.exports = router;

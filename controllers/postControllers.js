@@ -100,6 +100,7 @@ exports.getPostById = async (req, res) => {
 
 
 exports.searchPosts = async (req, res) => {
+    console.log('Received query:', req.query);
     const {query} = req.query;
     console.log('Received query:', query);
 
@@ -125,8 +126,6 @@ exports.searchPosts = async (req, res) => {
             },
             include: [{model: Tag, as: 'tags'}],
         });
-
-        console.log('Filtered posts:', posts);
 
         if (posts.length === 0) {
             // return res.status(404).json({ error: 'Post not found' });
