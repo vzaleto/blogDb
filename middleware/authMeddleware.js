@@ -10,7 +10,22 @@ exports.authAdmin = (req, res, next) => {
     }
     const token = authHeader.split(' ')[1]
 
+
+    // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    //     console.log("TOKEN:", token);
+    //     console.log("SECRET:", process.env.JWT_SECRET);
+    //     console.log("ERROR:", err);
+    //     console.log("DECODED:", decoded);
+    //
+    //     if (err) {
+    //         return res.status(403).json({ error: 'Error verifying token' });
+    //     }
+
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        console.log("TOKEN:", token);
+             console.log("SECRET:", process.env.JWT_SECRET);
+             console.log("ERROR:", err);
+             console.log("DECODED:", decoded);
         if(err) {
             return res.status(403).json({error: 'Error verifying token'})
         }

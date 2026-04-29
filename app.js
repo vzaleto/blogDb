@@ -4,9 +4,6 @@ const dotenv = require('dotenv');
 const postRoutes = require('./routes/postRoutes');
 const {sequelize} = require('./models');
 
-
-
-
 dotenv.config();
 
 const app = express();
@@ -15,7 +12,9 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use("/api", postRoutes);
-
+app.get('/', (req, res) => {
+    res.send('API is working 🚀');
+});
 
 sequelize.sync({alter: true})
     .then(() => console.log('Database connected'))
