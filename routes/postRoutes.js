@@ -1,5 +1,5 @@
 const express = require('express');
-const {createPost, getPosts, getPostById, getPostByTagName, getTags, searchPosts} = require('../controllers/postControllers');
+const {createPost, getPosts, getPostById, getPostByTagName, getTags, searchPosts,deletePost} = require('../controllers/postControllers');
 const {authAdmin} = require("../middleware/authMeddleware");
 const {adminLogin} = require("../controllers/authController");
 const multer = require("multer");
@@ -24,7 +24,6 @@ router.get('/search', searchPosts);
 router.get('/post/:id', getPostById);
 router.get('/post/tag/:tagName', getPostByTagName);
 router.get('/tags', getTags);
-
-
+router.delete('/post/:id', deletePost);
 
 module.exports = router;

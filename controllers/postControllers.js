@@ -1,5 +1,6 @@
-const Post = require('../models/Post');
-const Tag = require('../models/Tag');
+// const Post = require('../models/Post');
+// const Tag = require('../models/Tag');
+const {Post, Tag,sequelize} = require('../models');
 const {Op} = require("sequelize");
 const multer = require("multer");
 
@@ -136,3 +137,29 @@ exports.searchPosts = async (req, res) => {
         res.status(500).json({error: 'Failed to search posts'});
     }
 };
+
+exports.deletePost = async (req, res) => {
+    try{
+        const {id} = req.params;
+         const deletePost = await Post.destroy({where: {id}});
+        await Tag.destroy({
+            where: {
+                id: {
+                    [Op.notIn]: sequelize.literal(
+                        '(SELECT DISTINCT tagId FROM PostTag)'
+                    )
+                }
+            }
+        });
+         // const deleteTag = await Tag.destroy({where: {id}});
+
+        if (deletePost ) {
+            res.json({id})
+        }else{
+            res.status(404).send("Post or Tag not found");
+        }
+
+    }catch(error){
+        res.status(500).json({error: error.message});
+    }
+}
