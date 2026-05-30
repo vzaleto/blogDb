@@ -1,8 +1,10 @@
 const express = require('express');
-const {createPost, getPosts, getPostById, getPostByTagName, getTags, searchPosts,deletePost} = require('../controllers/postControllers');
+const router = express.Router();
+const {createPost, getPosts, getPostById, getPostByTagName, getTags, searchPosts,deletePost, updatePost} = require('../controllers/postControllers');
 const {authAdmin} = require("../middleware/authMeddleware");
 const {adminLogin} = require("../controllers/authController");
 const multer = require("multer");
+const {createCategory, getCategories} = require("../controllers/categoryControllers");
 
 const storage = multer.diskStorage({
     destination: (req, file, cd) => {
@@ -15,7 +17,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage})
 
-const router = express.Router();
 
 router.post('/admin/login', adminLogin);
 router.post('/postCreate', upload.fields([{name:'image', maxCount: 1},{name:'cardImage', maxCount: 20}]), authAdmin,  createPost);
@@ -25,5 +26,8 @@ router.get('/post/:id', getPostById);
 router.get('/post/tag/:tagName', getPostByTagName);
 router.get('/tags', getTags);
 router.delete('/post/:id', deletePost);
+router.post('/category', authAdmin, createCategory);
+router.get('/category', getCategories);
+router.patch('/postEdit/:id', upload.fields([{name:'image', maxCount: 1},{name:'cardImage', maxCount: 20}]), authAdmin, updatePost);
 
 module.exports = router;

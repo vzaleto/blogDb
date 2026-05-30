@@ -1,14 +1,14 @@
 // const Post = require('../models/Post');
 // const Tag = require('../models/Tag');
-const {Post, Tag,sequelize} = require('../models');
+const {Post, Tag, sequelize, Category} = require('../models');
 const {Op} = require("sequelize");
 const multer = require("multer");
 
 
 exports.createPost = async (req, res) => {
     console.log(req.body)
-    const {title, content, tags, fullContent} = req.body;
-
+    const {title, content, tags, fullContent, categoryId} = req.body;
+    console.log(req.files)
     const image = req.files?.image?.[0]?.filename || null;
     const cardImages = req.files?.cardImage || [];
 
@@ -21,7 +21,7 @@ exports.createPost = async (req, res) => {
     }))
 
     try {
-        const post = await Post.create({title, content, image, fullContent: fullContentWithImage});
+        const post = await Post.create({title, content, image, categoryId, fullContent: fullContentWithImage});
 
         if (tagsParsed && tagsParsed.length > 0) {
 
@@ -40,13 +40,16 @@ exports.createPost = async (req, res) => {
     }
 }
 
+
 exports.getPosts = async (req, res) => {
     try {
         const posts = await Post.findAll({
 
-            include: [{model: Tag, as: 'tags'}]
+            include: [
+                {model: Tag, as: 'tags'},
+                {model: Category, as: 'category'}
+            ]
         })
-
 
         res.status(200).json(posts)
     } catch (err) {
@@ -88,9 +91,19 @@ exports.getPostById = async (req, res) => {
                 {
                     model: Tag,
                     as: 'tags'
+                },
+                {
+                    model: Category,
+                    as: 'category'
                 }
             ]
         })
+        if (!post) {
+            return res.status(404).json({
+                message: 'Post not found'
+            });
+        }
+
         res.status(200).json(post)
     } catch (err) {
         console.error(err)
@@ -139,9 +152,9 @@ exports.searchPosts = async (req, res) => {
 };
 
 exports.deletePost = async (req, res) => {
-    try{
+    try {
         const {id} = req.params;
-         const deletePost = await Post.destroy({where: {id}});
+        const deletePost = await Post.destroy({where: {id}});
         await Tag.destroy({
             where: {
                 id: {
@@ -151,15 +164,69 @@ exports.deletePost = async (req, res) => {
                 }
             }
         });
-         // const deleteTag = await Tag.destroy({where: {id}});
-
-        if (deletePost ) {
+        if (deletePost) {
             res.json({id})
-        }else{
+        } else {
             res.status(404).send("Post or Tag not found");
         }
 
-    }catch(error){
+    } catch (error) {
         res.status(500).json({error: error.message});
     }
+}
+exports.updatePost = async (req, res) => {
+    console.log(req.body)
+    const {id} = req.params;
+    console.log(req.params)
+    const {title, content, tags, fullContent, categoryId} = req.body;
+    const tagParsed = tags ? JSON.parse(tags) : [];
+    const uniqTags = [...new Map(tagParsed.map(tag => [tag.name, tag])).values()];
+    const image = req.files?.image?.[0]?.filename || null;
+    const cardImages = req.files?.cardImage || [];
+
+    const fullContentParsed = fullContent ? JSON.parse(fullContent) : [];
+
+    let imageIndex = 0;
+    const fullContentWithImage = fullContentParsed.map((elem)=>{
+        if(elem.image === "_NEW_IMAGE_"){
+            const newImage = cardImages[imageIndex]?.filename || null;
+            imageIndex++;
+            return{
+                ...elem,
+                image:newImage
+            }
+        }
+        return elem;
+    })
+
+
+    const tagInstances = await Promise.all(
+        uniqTags.map(async (tag) => {
+                const [tagItem] = await Tag.findOrCreate({
+                    where: {name: tag.name},
+                })
+                return tagItem
+            }
+        )
+    )
+
+    const post = await Post.findByPk(id, {
+        include: [{model: Tag, as: 'tags'}]
+    });
+    if (!post) {
+        return res.status(404).json({error: 'Post not found'});
+    }
+
+
+    post.title = title;
+    if (image) {
+        post.image = image;
+    }
+    post.content = content;
+    post.categoryId = categoryId;
+    post.fullContent = fullContentWithImage;
+
+    await post.setTags(tagInstances);
+    await post.save();
+res.json({post})
 }

@@ -18,7 +18,12 @@ const Post = sequelize.define('Post', {
     fullContent:{
         type: DataTypes.JSON,
         allowNull: true
+    },
+    categoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
     }
+
 }, {
     timestamps: true,
     createdAt: 'createdAt',
