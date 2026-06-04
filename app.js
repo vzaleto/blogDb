@@ -19,8 +19,6 @@ app.get('/', (req, res) => {
 });
 
 
-
-
 sequelize.sync({alter: true})
     .then(() => console.log('Database connected'))
     .catch(error => console.log(error))
