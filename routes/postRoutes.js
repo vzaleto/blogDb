@@ -8,12 +8,18 @@ const {authAdmin} = require("../middleware/authMeddleware");
 const {adminLogin} = require("../controllers/authController");
 const multer = require("multer");
 const {createCategory, getCategories} = require("../controllers/categoryControllers");
+const fs = require('fs');
+const uploadDir = path.join(__dirname, "uploads");
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cd) => {
         cd(null, uploadDir)
     },
-    filename: (req, file, cb) => {
+    filename: (req, file, cd) => {
         const ext = path.extname(file.originalname);
         const fileName =
             Date.now() +
@@ -21,7 +27,7 @@ const storage = multer.diskStorage({
             Math.random().toString(36).slice(2, 8) +
             ext;
 
-        cb(null, fileName);
+        cd(null, fileName);
     }
 })
 
