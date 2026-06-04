@@ -187,13 +187,13 @@ exports.updatePost = async (req, res) => {
     const fullContentParsed = fullContent ? JSON.parse(fullContent) : [];
 
     let imageIndex = 0;
-    const fullContentWithImage = fullContentParsed.map((elem)=>{
-        if(elem.image === "_NEW_IMAGE_"){
+    const fullContentWithImage = fullContentParsed.map((elem) => {
+        if (elem.image === "_NEW_IMAGE_") {
             const newImage = cardImages[imageIndex]?.filename || null;
             imageIndex++;
-            return{
+            return {
                 ...elem,
-                image:newImage
+                image: newImage
             }
         }
         return elem;
@@ -228,5 +228,28 @@ exports.updatePost = async (req, res) => {
 
     await post.setTags(tagInstances);
     await post.save();
-res.json({post})
+    res.json({post})
+}
+exports.getPostByCategory = async (req, res)=>{
+    const {slug} = req.params;
+    try{
+        const post = await Post.findAll({
+            include: [{
+                model: Category,
+                as: 'category',
+                where: {slug}
+            },{
+                model: Tag,
+                as: 'tags',
+                through: {attributes: []}
+            },
+            ],
+            order: [['createdAt', 'DESC']],
+        });
+        res.json(post)
+    }catch (err){
+        console.error(err)
+        res.status(500).json({error: 'Failed to get posts by category'})
+    }
+
 }
