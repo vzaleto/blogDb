@@ -11,7 +11,7 @@ const {createCategory, getCategories} = require("../controllers/categoryControll
 
 const storage = multer.diskStorage({
     destination: (req, file, cd) => {
-        cd(null, 'uploads')
+        cd(null, uploadDir)
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
